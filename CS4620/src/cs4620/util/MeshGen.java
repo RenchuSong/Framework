@@ -166,7 +166,8 @@ public class MeshGen {
 		}
 		else if (fileIn != null) {
 			// Load Optimized Surface Data (Only The Positional Data And Maybe With UV Seams)
-			OBJMesh mesh = OBJParser.parseWithMerging(fileIn, fullMeshOptimization, true);
+			//OBJMesh mesh = OBJParser.parseWithMerging(fileIn, fullMeshOptimization, true);
+			OBJMesh mesh = OBJParser.parse(fileIn, fullMeshOptimization, true);
 			
 			ArrayList<Vector3> expPos = mesh.positions;
 			if(!fullMeshOptimization) {

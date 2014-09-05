@@ -21,6 +21,7 @@ public class MeshGenCylinder extends MeshGenerator {
 
 		// Create Storage Spaces
 		outData.positions = BufferUtils.createFloatBuffer(outData.vertexCount * 3);
+		outData.normals = BufferUtils.createFloatBuffer(outData.vertexCount * 3);
 		outData.indices = BufferUtils.createIntBuffer(outData.indexCount);
 		
 		// Create The Vertices
@@ -33,20 +34,29 @@ public class MeshGenCylinder extends MeshGenerator {
 			
 			// Middle Tube Top
 			outData.positions.put(x); outData.positions.put(1); outData.positions.put(z);
+			outData.normals.put(x); outData.normals.put(0); outData.normals.put(z);
 			
 			// Middle Tube Bottom
 			outData.positions.put(x); outData.positions.put(-1); outData.positions.put(z);
-
+			outData.normals.put(x); outData.normals.put(0); outData.normals.put(z);
+			
 			// Top Cap
 			outData.positions.put(x); outData.positions.put(1); outData.positions.put(z);
-
+			outData.normals.put(0); outData.normals.put(1); outData.normals.put(0);
+			
 			// Bottom Cap
 			outData.positions.put(x); outData.positions.put(-1); outData.positions.put(z);
+			outData.normals.put(0); outData.normals.put(-1); outData.normals.put(0);
+			
 		}
 		// Extra Vertices For U = 1
+		float z = (float)-Math.cos(0);
+		float x = (float)-Math.sin(0);
 		outData.positions.put(0); outData.positions.put(1); outData.positions.put(-1);
+		outData.normals.put(x); outData.normals.put(0); outData.normals.put(z);
 		
 		outData.positions.put(0); outData.positions.put(-1); outData.positions.put(-1);
+		outData.normals.put(x); outData.normals.put(0); outData.normals.put(z);
 		
 		// Create The Indices For The Tube
 		for(int i = 0;i < opt.divisionsLongitude;i++) {
@@ -73,6 +83,7 @@ public class MeshGenCylinder extends MeshGenerator {
 			outData.indices.put(si + 5);
 			outData.indices.put(si + 1);
 		}
+		
 	}
 
 }
