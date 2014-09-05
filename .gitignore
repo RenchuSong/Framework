@@ -14,6 +14,7 @@ OLD/
 local.properties
 .settings/
 .loadpath
+*.obj
 
 # External tool builders
 .externalToolBuilders/
