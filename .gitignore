@@ -11,10 +11,14 @@ OLD/
 *.bak
 *.swp
 *~.nib
+*.obj
+*.png
+CS4620/*.obj
+CS4620/*.png
+
 local.properties
 .settings/
 .loadpath
-*.obj
 
 # External tool builders
 .externalToolBuilders/
