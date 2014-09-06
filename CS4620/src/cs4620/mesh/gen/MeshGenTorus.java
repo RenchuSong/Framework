@@ -11,5 +11,7 @@ public class MeshGenTorus extends MeshGenerator {
 	@Override
 	public void generate(MeshData outData, MeshGenOptions opt) {
 		// TODO#A1: Extra Credit, But Not Difficult
+		
+		
 	}
 }
