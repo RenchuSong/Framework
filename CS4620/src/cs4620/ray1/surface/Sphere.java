@@ -60,7 +60,7 @@ public class Sphere extends Surface {
 		location.normalize();
 		outRecord.normal.set(location);
 		// texCoords
-		double angle = Math.asin(Math.abs(location.x));
+		double angle = Math.asin(Math.abs(location.x) / Math.sqrt(location.x * location.x + location.z * location.z));
 		if (location.x <= 0 && location.z >= 0) {
 			angle = Math.PI - angle;
 		} else if (location.x > 0) {

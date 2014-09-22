@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--  Test scene with a single sphere 
+      RGB encoding of XYZ components of the surface normals
+ -->
+<scene>
+  <exposure>4.24</exposure>
+  <camera type="PerspectiveCamera">
+    <viewPoint>4 6 8</viewPoint>
+    <viewDir>-4 -6 -8</viewDir>
+    <viewUp>0 1 0</viewUp>
+    <projDistance>2</projDistance>
+    <viewWidth>0.5</viewWidth>
+    <viewHeight>0.5</viewHeight>
+  </camera>
+  <image>
+    300 300
+  </image>
+  <shader name="xyz2rgb" type="RGBNormals"></shader>
+  
+  <texture type="RepeatTexture" name="earthTex">
+    <image>../../textures/Earth.png</image>
+  </texture>
+
+  <shader name="earth" type="Phong">
+    <texture ref = "earthTex" />
+    <specularColor>0.9 0.7 0.3</specularColor>
+    <exponent>10</exponent>
+  </shader>
+
+  <surface type="Sphere">
+    <shader ref="earth" />
+    <!--shader type="ShowNormal"/-->
+    <center>0 0 0</center>
+    <radius>1</radius>
+  </surface>
+  <light>
+    <position>3 10 5</position>
+    <intensity>11 11 11</intensity>
+  </light>
+</scene>

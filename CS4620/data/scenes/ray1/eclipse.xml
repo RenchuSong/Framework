@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<scene>
+  <exposure>10</exposure>
+
+  <camera type="PerspectiveCamera">
+    <viewPoint>450 100.5 300</viewPoint>
+    <viewDir>-.692307692 -.153846154 -.461538462</viewDir>
+    <viewUp>0 1 0</viewUp>
+    <projDistance>25</projDistance>
+    <viewWidth>5</viewWidth>
+    <viewHeight>5</viewHeight>
+  </camera>
+  
+  <image>
+    2048 2048
+  </image>
+
+  <light>
+    <position>0 0 23679</position>
+    <intensity>100000000 100000000 100000000</intensity>
+  </light>
+
+  <shader name="earth" type="Lambertian">
+    <diffuseColor>.3 .3 .3</diffuseColor>
+  </shader>
+
+  <surface type="Sphere">
+    <shader ref="earth" />
+    <center>0 0 0</center>
+    <radius>1</radius>
+  </surface>
+
+  <surface type="Sphere">
+    <center>0 1 56.54</center>
+    <radius>0.27</radius>
+  </surface>
+</scene>
