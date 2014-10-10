@@ -94,6 +94,50 @@ public class CameraController {
 	 */
 	private void rotate(Matrix4 parentWorld, Matrix4 transformation, Vector3 rotation) {
 		// TODO#A3
+		
+		Matrix4 f = new Matrix4(this.camera.mWorldTransform);
+		Matrix4 f_1 = new Matrix4(f).invert();
+		
+		Matrix4 f2 = new Matrix4(parentWorld);
+		Matrix4 f2_1 = new Matrix4(f2).invert();
+		
+		double rx = rotation.x / 180 * Math.PI;
+		double ry = rotation.y / 180 * Math.PI;
+		double rz = rotation.z / 180 * Math.PI;
+
+		/*Matrix4 rotateX = new Matrix4();
+		rotateX.m[5] = (float)Math.cos(rx);
+		rotateX.m[6] = (float)Math.sin(rx);
+		rotateX.m[9] = -(float)Math.sin(rx);
+		rotateX.m[10] = (float)Math.cos(rx);
+		
+		Matrix4 rotateY = new Matrix4();
+		rotateY.m[0] = (float)Math.cos(ry);
+		rotateY.m[2] = -(float)Math.sin(ry);
+		rotateY.m[8] = (float)Math.sin(ry);
+		rotateY.m[10] = (float)Math.cos(ry);
+		
+		Matrix4 rotateZ = new Matrix4();
+		rotateZ.m[0] = (float)Math.cos(rz);
+		rotateZ.m[1] = (float)Math.sin(rz);
+		rotateZ.m[4] = -(float)Math.sin(rz);
+		rotateZ.m[5] = (float)Math.cos(rz);*/
+		Matrix4 rotateX = Matrix4.createRotationX((float)rx);
+		Matrix4 rotateY = Matrix4.createRotationY((float)ry);
+		Matrix4 rotateZ = Matrix4.createRotationZ((float)rz);
+		
+		
+		if (this.orbitMode) {
+			Matrix4 fp = new Matrix4(f);
+			fp.m[12] = fp.m[13] = fp.m[14] = 0;
+			Matrix4 fp_1 = new Matrix4(fp).invert();
+			transformation.set(f).mulAfter(fp_1).mulAfter(rotateX).mulAfter(rotateY).mulAfter(rotateZ).mulAfter(fp).mulAfter(f2_1);
+		} else {
+			transformation.mulAfter(f_1);
+			transformation.mulAfter(rotateX).mulAfter(rotateY).mulAfter(rotateZ);
+			transformation.mulAfter(f);
+		}
+
 	}
 	
 	/**
@@ -106,5 +150,14 @@ public class CameraController {
 	 */
 	private void translate(Matrix4 parentWorld, Matrix4 transformation, Vector3 motion) {
 		// TODO#A3
+		Matrix4 f = new Matrix4(this.camera.mWorldTransform);
+		Matrix4 f_1 = new Matrix4(f).invert();
+		transformation.mulAfter(f_1);
+		/*transformation.m[12] += motion.x;
+		transformation.m[13] += motion.y;
+		transformation.m[14] += motion.z;
+		*/
+		transformation.mulAfter(Matrix4.createTranslation(motion));
+		transformation.mulAfter(f);
 	}
 }
