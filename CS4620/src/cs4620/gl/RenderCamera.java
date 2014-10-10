@@ -47,5 +47,30 @@ public class RenderCamera extends RenderObject {
 		// Look through the methods in Matrix4 before you type in any matrices from the book or the OpenGL specification.
 		
 		// TODO#A3
+		Matrix4 prospective = Matrix4.createPerspective(
+				(float)this.sceneCamera.imageSize.x, 
+				(float)this.sceneCamera.imageSize.y, 
+				(float)this.sceneCamera.zPlanes.x, 
+				(float)this.sceneCamera.zPlanes.y
+			);
+		Matrix4 orth = Matrix4.createOrthographic(
+				(float)this.sceneCamera.imageSize.x, 
+				(float)this.sceneCamera.imageSize.y, 
+				(float)this.sceneCamera.zPlanes.x,
+				(float)this.sceneCamera.zPlanes.y
+			);
+		
+		Matrix4 Mcam = new Matrix4(this.mWorldTransform);
+		this.mViewProjection.set(Mcam.invert());
+		if (this.sceneCamera.isPerspective) {
+			this.mViewProjection.mulAfter(prospective);
+		} else {
+			this.mViewProjection.mulAfter(orth);
+		}
+		
+//		TODO: re-scale
+		Matrix4 Mvp = new Matrix4();
+		Mvp.m[0] *= (this.sceneCamera.imageSize.x / this.sceneCamera.imageSize.y) / (this.viewportSize.x / this.viewportSize.y);
+		this.mViewProjection.mulAfter(Mvp);
 	}	
 }

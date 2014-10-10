@@ -22,6 +22,7 @@ import cs4620.gl.RenderCamera;
 import cs4620.gl.RenderEnvironment;
 import cs4620.gl.RenderObject;
 import cs4620.gl.Renderer;
+import cs4620.ray1.Ray;
 import cs4620.scene.form.ControlWindow;
 import cs4620.scene.form.ScenePanel;
 import egl.BlendState;
@@ -30,6 +31,8 @@ import egl.IDisposable;
 import egl.RasterizerState;
 import egl.math.Matrix4;
 import egl.math.Vector2;
+import egl.math.Vector3;
+import egl.math.Vector4;
 import ext.csharp.ACEventFunc;
 
 public class ManipController implements IDisposable {
@@ -210,6 +213,125 @@ public class ManipController implements IDisposable {
 		// You may find it helpful to structure your code into a few helper functions; ours is about 150 lines.
 		
 		// TODO#A3
+		// Construct two rays
+		Ray r1 = genCameraRay(camera, lastMousePos);
+		Ray r2 = genCameraRay(camera, curMousePos);
+		
+		// Construct transformation plane
+		RenderObject tmp = object;
+		if (this.parentSpace) {
+			tmp = object.parent;
+		}
+		Vector3 origin = new Vector3(), v1 = new Vector3(), v2 = new Vector3();
+		origin.set((float)tmp.mWorldTransform.m[12],(float)tmp.mWorldTransform.m[13],(float)tmp.mWorldTransform.m[14]);
+		if (manip.axis == Manipulator.Axis.X) {
+			v1.set((float)tmp.mWorldTransform.m[0],(float)tmp.mWorldTransform.m[1],(float)tmp.mWorldTransform.m[2]);
+		//	v2.set((float)tmp.mWorldTransform.m[4],(float)tmp.mWorldTransform.m[5],(float)tmp.mWorldTransform.m[6]);
+		} else if (manip.axis == Manipulator.Axis.Y) {
+			v1.set((float)tmp.mWorldTransform.m[4],(float)tmp.mWorldTransform.m[5],(float)tmp.mWorldTransform.m[6]);
+		//	v2.set((float)tmp.mWorldTransform.m[8],(float)tmp.mWorldTransform.m[9],(float)tmp.mWorldTransform.m[10]);
+		} else if (manip.axis == Manipulator.Axis.Z) {
+			v1.set((float)tmp.mWorldTransform.m[8],(float)tmp.mWorldTransform.m[9],(float)tmp.mWorldTransform.m[10]);
+		//	v2.set((float)tmp.mWorldTransform.m[0],(float)tmp.mWorldTransform.m[1],(float)tmp.mWorldTransform.m[2]);
+		}
+		
+		Vector3 u = new Vector3(camera.mWorldTransform.m[0], camera.mWorldTransform.m[1], camera.mWorldTransform.m[2]);
+		Vector3 v = new Vector3(camera.mWorldTransform.m[4], camera.mWorldTransform.m[5], camera.mWorldTransform.m[6]);
+		Vector3 r = new Vector3(v1);
+		v2 = constructVector(u, v, r);
+		
+		// Get intersection points
+		Vector3 p1 = rayPlaneIntersection(r1, origin, v1, v2);
+		Vector3 p2 = rayPlaneIntersection(r2, origin, v1, v2);
+		// Get move distance
+		float d1 = moveDist(origin, v1, p1);
+		float d2 = moveDist(origin, v1, p2);
+		
+		//System.out.println(dist);
+		
+		// Construct transformation matrix
+		Matrix4 transformation = null;
+		if (manip.type == Manipulator.Type.TRANSLATE) {
+			if (manip.axis == Manipulator.Axis.X) {
+				transformation = Matrix4.createTranslation(d2 - d1, 0, 0);
+			} else if (manip.axis == Manipulator.Axis.Y) {
+				transformation = Matrix4.createTranslation(0, d2 - d1, 0);
+			} else if (manip.axis == Manipulator.Axis.Z) {
+				transformation = Matrix4.createTranslation(0, 0, d2 - d1);
+			}
+		} else if (manip.type == Manipulator.Type.SCALE) {
+			if (manip.axis == Manipulator.Axis.X) {
+				transformation = Matrix4.createScale(d2 / d1, 1, 1);
+			} else if (manip.axis == Manipulator.Axis.Y) {
+				transformation = Matrix4.createScale(1, d2 / d1, 1);
+			} else if (manip.axis == Manipulator.Axis.Z) {
+				transformation = Matrix4.createScale(1, 1, d2 / d1);
+			}
+		} else if (manip.type == Manipulator.Type.ROTATE) {
+			float angle = (float)((curMousePos.y - lastMousePos.y) * 2);
+			if (manip.axis == Manipulator.Axis.X) {
+				transformation = Matrix4.createRotationX(angle);
+			} else if (manip.axis == Manipulator.Axis.Y) {
+				transformation = Matrix4.createRotationY(angle);
+			} else if (manip.axis == Manipulator.Axis.Z) {
+				transformation = Matrix4.createRotationZ(angle);
+			}
+		}
+		
+		// Transform depend on space
+		if (this.parentSpace) {
+			object.sceneObject.transformation.mulAfter(transformation);
+		} else {
+			object.sceneObject.transformation.mulBefore(transformation);
+		}
+		
+	}
+	
+	private Vector3 constructVector(Vector3 u, Vector3 v, Vector3 r) {
+		float A = u.x * r.x + u.y * r.y + u.z * r.z;
+		float B = v.x * r.x + v.y * r.y + v.z * r.z;
+		if (A == 0) return new Vector3(u);
+		Vector3 ans = new Vector3(v);
+		Vector3 tmp = new Vector3(u);
+		tmp.mul(-B / A);
+		ans.add(tmp);
+		return ans.normalize();
+	}
+	
+	private Ray genCameraRay(RenderCamera camera, Vector2 clickPos) {
+		Ray ray = new Ray();
+		ray.origin.set(camera.mWorldTransform.m[12], camera.mWorldTransform.m[13], camera.mWorldTransform.m[14]);
+		Vector4 p = new Vector4(
+				(float)(clickPos.x * camera.sceneCamera.imageSize.x / 2), 
+				(float)(clickPos.y * camera.sceneCamera.imageSize.y / 2), 
+				-(float)camera.sceneCamera.zPlanes.x, 1);
+		p = camera.mWorldTransform.mul(p);
+		//System.out.println(p);
+		ray.direction.set(p.x - ray.origin.x, p.y - ray.origin.y, p.z - ray.origin.z);
+		ray.direction.normalize();
+		return ray;
+	}
+	private Vector3 rayPlaneIntersection(Ray ray, Vector3 origin, Vector3 v1, Vector3 v2) {
+		Vector3 v = new Vector3();
+		
+		double a = v1.x, d = v2.x, g = -ray.direction.x, j = ray.origin.x - origin.x;
+		double b = v1.y, e = v2.y, h = -ray.direction.y, k = ray.origin.y - origin.y;
+		double c = v1.z, f = v2.z, i = -ray.direction.z, l = ray.origin.z - origin.z;
+		
+		double M = a* (e * i - h * f) + b * (g * f - d * i) + c * (d * h - e * g);
+		
+		if (M != 0) {
+			double t = -(f * (a * k - j * b) + e * (j * c - a * l) + d * (b * l - k * c)) / M;
+			v.set((float)(ray.direction.x * t), (float)(ray.direction.y * t), (float)(ray.direction.z * t));
+			v.add((float)ray.origin.x, (float)ray.origin.y, (float)ray.origin.z);
+		}
+		return v;
+	}
+	
+	private float moveDist(Vector3 origin, Vector3 dir, Vector3 p1) {
+		Vector3 v = new Vector3(p1);
+		v.sub(origin);
+		return v.dot(dir) / dir.len();
 	}
 	
 	public void checkMouse(int mx, int my, RenderCamera camera) {
