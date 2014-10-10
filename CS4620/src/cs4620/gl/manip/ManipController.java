@@ -226,14 +226,20 @@ public class ManipController implements IDisposable {
 		origin.set((float)tmp.mWorldTransform.m[12],(float)tmp.mWorldTransform.m[13],(float)tmp.mWorldTransform.m[14]);
 		if (manip.axis == Manipulator.Axis.X) {
 			v1.set((float)tmp.mWorldTransform.m[0],(float)tmp.mWorldTransform.m[1],(float)tmp.mWorldTransform.m[2]);
-			v2.set((float)tmp.mWorldTransform.m[4],(float)tmp.mWorldTransform.m[5],(float)tmp.mWorldTransform.m[6]);
+		//	v2.set((float)tmp.mWorldTransform.m[4],(float)tmp.mWorldTransform.m[5],(float)tmp.mWorldTransform.m[6]);
 		} else if (manip.axis == Manipulator.Axis.Y) {
 			v1.set((float)tmp.mWorldTransform.m[4],(float)tmp.mWorldTransform.m[5],(float)tmp.mWorldTransform.m[6]);
-			v2.set((float)tmp.mWorldTransform.m[8],(float)tmp.mWorldTransform.m[9],(float)tmp.mWorldTransform.m[10]);
+		//	v2.set((float)tmp.mWorldTransform.m[8],(float)tmp.mWorldTransform.m[9],(float)tmp.mWorldTransform.m[10]);
 		} else if (manip.axis == Manipulator.Axis.Z) {
 			v1.set((float)tmp.mWorldTransform.m[8],(float)tmp.mWorldTransform.m[9],(float)tmp.mWorldTransform.m[10]);
-			v2.set((float)tmp.mWorldTransform.m[0],(float)tmp.mWorldTransform.m[1],(float)tmp.mWorldTransform.m[2]);
+		//	v2.set((float)tmp.mWorldTransform.m[0],(float)tmp.mWorldTransform.m[1],(float)tmp.mWorldTransform.m[2]);
 		}
+		
+		Vector3 u = new Vector3(camera.mWorldTransform.m[0], camera.mWorldTransform.m[1], camera.mWorldTransform.m[2]);
+		Vector3 v = new Vector3(camera.mWorldTransform.m[4], camera.mWorldTransform.m[5], camera.mWorldTransform.m[6]);
+		Vector3 r = new Vector3(v1);
+		v2 = constructVector(u, v, r);
+		
 		// Get intersection points
 		Vector3 p1 = rayPlaneIntersection(r1, origin, v1, v2);
 		Vector3 p2 = rayPlaneIntersection(r2, origin, v1, v2);
@@ -280,6 +286,18 @@ public class ManipController implements IDisposable {
 		}
 		
 	}
+	
+	private Vector3 constructVector(Vector3 u, Vector3 v, Vector3 r) {
+		float A = u.x * r.x + u.y * r.y + u.z * r.z;
+		float B = v.x * r.x + v.y * r.y + v.z * r.z;
+		if (A == 0) return new Vector3(u);
+		Vector3 ans = new Vector3(v);
+		Vector3 tmp = new Vector3(u);
+		tmp.mul(-B / A);
+		ans.add(tmp);
+		return ans.normalize();
+	}
+	
 	private Ray genCameraRay(RenderCamera camera, Vector2 clickPos) {
 		Ray ray = new Ray();
 		ray.origin.set(camera.mWorldTransform.m[12], camera.mWorldTransform.m[13], camera.mWorldTransform.m[14]);
