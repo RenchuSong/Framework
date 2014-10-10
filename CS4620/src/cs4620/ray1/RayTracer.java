@@ -244,6 +244,11 @@ public class RayTracer {
 		//    just return the scene's background color.
 		// 2) Get the shader from the intersection record.
 		// 3) Call the shader's shade() method to set the color for this ray.
-		
+		IntersectionRecord record = new IntersectionRecord();
+		if (scene.getFirstIntersection(record, ray)) {
+			record.surface.getShader().shade(outColor, scene, ray, record);
+		} else {
+			outColor.set(scene.getBackColor());
+		}
 	}
 }
